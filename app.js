@@ -14,7 +14,6 @@ if (nameIndex !== -1 && args[nameIndex + 1]) {
 const displayVariants = (data) => {
     let allVariants = [];
 
-    // Collect all variants from each product
     data.data.products.edges.forEach(productNode => {
         productNode.node.variants.edges.forEach(variantNode => {
             allVariants.push({
@@ -25,7 +24,6 @@ const displayVariants = (data) => {
         });
     });
 
-    // Sort variants by price (ascending order)
     allVariants.sort((a, b) => a.priceAmount - b.priceAmount);
 
     // Print sorted variants
@@ -64,8 +62,18 @@ fetch(`${domain}/admin/api/2024-07/graphql.json`, {
         }
     }),
 })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        return response.json();
+    })
     .then(data => {
+        if (data.errors) {
+            throw new Error(`GraphQL error: ${data.errors.map(error => error.message).join(', ')}`);
+        }
+
         displayVariants(data);
     })
     .catch(error => console.error('Error:', error));
